@@ -1,0 +1,20 @@
+source:
+  type: jsonl
+  nodes_path: network_nodes.jsonl
+  relationships_path: network_relationships.jsonl
+
+target:
+  neo4j:
+    uri: bolt://localhost:7687
+    user: neo4j
+    password: password
+
+ingestion:
+ingestion:
+  nodes_parallel_mode: apoc
+  parallel_workers: 32
+  transaction_batch_size: 2000
+  transaction_error_handling: retry  # Auto-retry transient failures
+  strategy: direct_merge
+  max_retries: 5
+  schema_module: networksdb  # REQUIRED field

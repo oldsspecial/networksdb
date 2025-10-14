@@ -1,0 +1,63 @@
+pipeline:
+  name: network_discovery_polars
+  description: Network discovery with Polars I/O (processing still in memory)
+  version: 1.0.0
+  schema_modules: [networksdb]
+
+  stages:
+    # Read with Polars (converts to List[Dict])
+    - id: read_csv
+      type: polars_reader
+      config:
+        path: data/1m_public_30_dedup.csv
+        encoding: utf-8
+        chunk_size: 1000000
+        separator: ","
+        has_header: true
+        null_values: ["", "NULL", "null", "N/A"]
+
+    # Parse entities (List[Dict] → Entities)
+    - id: parse_entities
+      type: dict_parser
+      input: read_csv
+      config:
+        error_handling:
+          strategy: continue_on_error
+          required_entities: []
+        
+        mapping:
+          nodes:
+            - create: IPAddress
+              name: ip
+              fields:
+                address: ipv4_address
+                context: "const:test"
+            
+            - create: Domain
+              name: domain
+              fields:
+                address: domain
+                
+          relationships:
+            - create: HasIP
+              name: connection
+              start_node: domain
+              end_node: ip
+
+    # Deduplicate (Entities → Entities)
+    - id: deduplicate
+      type: polars_dedup
+      input: parse_entities
+      config: 
+        use_lazy: true
+        batch_size: 1000000
+
+    # Write with Polars to Parquet (Entities → Parquet)
+    - id: write_output
+      type: polars_writer
+      input: deduplicate
+      config:
+        nodes_path: network_nodes.parquet
+        relationships_path: network_relationships.parquet
+        compression: zstd  # Better compression for storage
+       # partition_by: ["primary_label", "type"]

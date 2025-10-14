@@ -1,0 +1,14 @@
+source:
+  type: jsonl
+  path: network_graph.jsonl
+
+target:
+  neo4j:
+    uri: bolt://localhost:7687
+    user: neo4j
+    password: password
+
+ingestion:
+  strategy: direct
+  batch_size: 1000
+  continue_on_error: true

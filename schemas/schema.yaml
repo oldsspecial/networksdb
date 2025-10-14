@@ -1,0 +1,149 @@
+# Base schemas for common properties
+base_schemas:
+  GraphObject:
+    properties:
+      created_at:
+        type: datetime
+        required: false
+        description: "When this entity was created"
+        merge_strategy: min
+        default: current_time
+      modified_at:
+        type: datetime
+        required: false
+        description: "When this entity was last modified"
+        merge_strategy: max
+        default: current_time
+      count:
+        type: int
+        required: false
+        merge_strategy: sum
+        default: 1
+      sources:
+        type: list
+        required: false
+        default: []
+        merge_strategy: union
+
+      
+
+nodes:
+  # Base IP Address node - extends from AuditableNode base schema
+  IPAddress:
+    primary_label: IPAddress
+    extends: GraphObject
+    classifiable: true
+    classifier_function: "networksdb.transforms.transforms.classify_ip"
+    allow_dynamic_properties: true
+    properties:
+      address:
+        type: string
+        required: true
+        identifying: true
+        normalizers:
+          - networksdb.transforms.transforms.normalize_ip
+        index: key  # Unique constraint on IP address
+        description: "The IP address in standard notation"
+    
+
+  # Private IP Address node (RFC1918 addresses)
+  PrivateIPAddress:
+    class_name: PrivateIPAddress
+    primary_label: PrivateIPAddress
+    extends: IPAddress
+    # additional_labels: ["IPAddress"] automatically added during inheritance
+    properties:
+      context:
+        type: string
+        required: true
+        identifying: true
+        normalizers:
+          - ziptie_schema.trim
+        description: "context string that makes this ip unique"
+      
+
+  # Public IP Address node (routable internet addresses)
+  PublicIPAddress:
+    class_name: PublicIPAddress
+    primary_label: PublicIPAddress
+    extends: IPAddress
+    ignore:
+      - context
+    # additional_labels: ["IPAddress"] automatically added during inheritance
+       
+   
+  
+  Domain:
+    primary_label: Domain
+    extends: GraphObject
+    properties:
+      address:
+        type: string
+        identifying: true
+        required: true
+        description: "Fully qualified domain name"
+        validators: [networksdb.transforms.validate_domain]
+      
+    # Role definitions for dynamic label management
+    roles:
+      mail_server: MailServer
+      web_server: WebServer
+      dns_server: DNSServer
+      email_domain: EmailDomain
+    
+    # Auto labels for automatic detection
+    auto_labels: networksdb.transforms.enrich_domain_labels  # TODO: implement this function
+
+  EmailAddress:
+    primary_label: EmailAddress
+    extends: GraphObject
+    properties:
+      address: 
+        type: string
+        identifying: true
+        required: true
+        description: "Email address"
+        validators: [networksdb.transforms.validate_email_address]
+        normalizers: [ziptie_schema.trim, ziptie_schema.lowercase]
+  
+  Email:
+    primary_label: Email
+    extends: GraphObject
+    properties:
+      from_rel:
+        type: node              # Embedded node
+        node_class: EmailAddress
+        identifying: true       # Contributes to Email's ID
+        required: true
+        relationship: FromRelationship
+        direction: IN
+      to:
+        type: node_list         # List of embedded nodes
+        node_class: EmailAddress
+        identifying: true       # Contributes to Email's ID
+        required: true
+        relationship: To
+        direction: OUT
+  
+
+relationships:
+  HasIP:
+    extends: GraphObject
+    rel_type: HAS_IP
+    start_end_pairs:
+      - start: Domain
+        end: IPAddress  # For domain resolution chains
+
+  FromRelationship:
+    extends: GraphObject
+    rel_type: FROM
+    start_end_pairs:
+    - start: EmailAddress
+      end: Email
+    
+  To:
+    extends: GraphObject
+    rel_type: TO
+    start_end_pairs:
+    - start: Email
+      end: EmailAddress
