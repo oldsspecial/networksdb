@@ -8,9 +8,9 @@ pipeline:
     - id: read_csv
       type: csv_reader
       config:
-        path: data/1m_public_30_dedup.csv
+        path: data/network_data.csv
         encoding: utf-8
-        chunk_size: 10000
+        batch_size: 10000
 
     - id: parse_entities
       type: dict_parser
@@ -26,38 +26,40 @@ pipeline:
               name: ip
               fields:
                 address: ipv4_address
-                context: "const:test"
+                context: "const:test2"
+                sources: ["const:test2"]
             
             - create: Domain
               name: domain
               fields:
                 address: domain
+                sources: ["const:test2"]
                 
           relationships:
             - create: HasIP
               name: connection
               start_node: domain
               end_node: ip
+              fields:
+                sources: ["const:test2"]
+
 
     # Write parsed entities to Trino staging tables
     - id: stage_to_trino
       type: trino_writer
       input: parse_entities
       config:
-        # Local Docker Trino connection
-        host: localhost
-        port: 8080
-        http_scheme: http
-        user: trino  # Default user (can be any string)
-        
-        # Catalog and schema (see options below)
-        catalog: memory  # For testing - OR use a persistent catalog
-        schema: default
-        
+        connection:
+          host: localhost
+          port: 8080
+          http_scheme: http
+          user: trino
+          catalog: iceberg
+          schema: default
         # Staging table names
-        nodes_table: network_discovery_nodes_staging
-        relationships_table: network_discovery_relationships_staging
-        
+        nodes_table: iceberg.testdb.nodes_staging
+        relationships_table: iceberg.testdb.relationships_staging
+        batch_size: 10000
         # Create tables if they don't exist
         create_tables: true
 
@@ -67,8 +69,11 @@ pipeline:
       input: stage_to_trino
       config:
         # Final table names
-        target_nodes_table: network_discovery_nodes
-        target_relationships_table: network_discovery_relationships
-        
+        target_nodes_table: iceberg.testdb.nodes
+        target_relationships_table: iceberg.testdb.relationships
+      
         # Create final tables if they don't exist
-        create_target: true
+        #create_tables: true
+        create_tables: true
+        #node_table_partition: null
+        #relationship_table_partition: null

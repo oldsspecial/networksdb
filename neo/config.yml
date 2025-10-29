@@ -10,11 +10,11 @@ target:
     password: password
 
 ingestion:
-ingestion:
-  nodes_parallel_mode: apoc
-  parallel_workers: 32
-  transaction_batch_size: 2000
-  transaction_error_handling: retry  # Auto-retry transient failures
+  #nodes_parallel_mode: false
+  #parallel_workers: 32
+  #transaction_batch_size: 2000
+  #transaction_error_handling: retry  # Auto-retry transient failures
   strategy: direct_merge
   max_retries: 5
+  batch_size: 15000
   schema_module: networksdb  # REQUIRED field

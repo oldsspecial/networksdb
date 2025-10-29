@@ -1,0 +1,62 @@
+pipeline:
+  name: network_discovery_example
+  description: Example pipeline for network discovery data
+  version: 1.0.0
+  schema_modules: [networksdb]
+
+  stages:
+    - id: "read_trino"
+      type: "trino_reader"
+      config:
+        connection:
+          host: localhost
+          port: 8080
+          http_scheme: http
+          user: trino
+          catalog: iceberg
+          schema: default
+        query: |
+          SELECT * FROM iceberg.testdb."50k_public"
+        batch_size: 10000
+
+    - id: parse_entities
+      type: dict_parser
+      input: read_trino
+      config:
+        error_handling:
+          strategy: continue_on_error
+          required_entities: []
+        
+        mapping:
+          nodes:
+            - create: IPAddress
+              name: ip
+              fields:
+                address: ipv4_address
+                context: "const:test"
+                sources: ["const:test"]
+            
+            - create: Domain
+              name: domain
+              fields:
+                address: domain
+                sources: ["const:test"]
+                
+          relationships:
+            - create: HasIP
+              name: connection
+              start_node: domain
+              end_node: ip
+
+    - id: deduplicate
+      type: memory_dedup
+      input: parse_entities
+      config: {}
+
+    - id: write_output
+      type: jsonl_writer
+      input: deduplicate
+      config:
+        nodes_path: network_nodes.jsonl
+        relationships_path: network_relationships.jsonl
+        encoding: utf-8

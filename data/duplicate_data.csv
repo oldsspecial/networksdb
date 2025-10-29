@@ -1,0 +1,11 @@
+ipv4_address, domain,  source,   extra
+74.49.110.80,test.binary.io,test,extra_value_1
+74.119.153.38,blog.startup.io,test,
+151.82.241.164,ftp.debugging.org,test,
+151.10.111.122,encoded.net,test,
+151.161.205.183,validation.net,test,
+74.49.110.80,test.binary.io,test,
+74.119.153.38,blog.startup.io,test,extra_value_2
+151.82.241.164,ftp.debugging.org,test,
+151.10.111.122,encoded.net,test,
+151.161.205.183,validation.net,test,

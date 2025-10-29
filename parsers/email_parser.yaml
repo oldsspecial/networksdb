@@ -1,0 +1,58 @@
+pipeline:
+  name: email_example
+  description: Example pipeline for network discovery data
+  version: 1.0.0
+  schema_modules: [networksdb]
+
+  stages:
+    - id: read_csv
+      type: csv_reader
+      config:
+        path: data/email_data.csv
+        encoding: utf-8
+        batch_size: 10000
+
+    - id: parse_entities
+      type: dict_parser
+      input: read_csv
+      config:
+        error_handling:
+          strategy: continue_on_error
+          required_entities: []
+        
+        mapping:
+          nodes:
+            - create: EmailAddress
+              name: fr
+              fields:
+                address: from
+                sources: ["const:test"]
+            
+            - create: EmailAddress
+              name: to
+              iterate: to
+              split_by: ","
+              fields:
+                address: to
+                sources: ["const:test"]
+
+            - create: Email
+              name: email
+              fields:
+                from_rel: fr
+                to: to
+
+          
+
+    - id: deduplicate
+      type: memory_dedup
+      input: parse_entities
+      config: {}
+
+    - id: write_output
+      type: jsonl_writer
+      input: deduplicate
+      config:
+        nodes_path: network_nodes.jsonl
+        relationships_path: network_relationships.jsonl
+        encoding: utf-8

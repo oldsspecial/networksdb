@@ -1,0 +1,86 @@
+pipeline:
+  name: polars_dedup
+  description: "Demonstrates high-performance deduplication using Polars DataFrames with schema-defined merge strategies"
+  schema_modules: ["networksdb"]
+
+  stages:
+    # Stage 1: Read data from Parquet (high throughput)
+    - id: "read_network_data"
+      type: "polars_reader"
+      config:
+        path: "data/network_data.parquet"
+        batch_size: 50000  # Stream in 50K row batches for memory efficiency
+
+    # Stage 2: Parse raw data into entities
+    - id: "parse_entities"
+      type: "polars_parser"
+      input: "read_network_data"
+      config:
+        mapping:
+          imports:
+            - parsers/network_discovery.yaml
+        # No batch_size needed - parser processes reader batches as they arrive
+
+    # Stage 3: Deduplicate entities with Polars (50K-100K entities/sec)
+    - id: "deduplicate"
+      type: "polars_dedup"
+      input: "parse_entities"
+      config:
+        # Enable lazy execution for query optimization (default: true)
+        use_lazy: true
+
+        # Skip dynamic properties merging for performance (default: false)
+        # skip_dynamic_properties: false
+
+        # Optional: Override merge strategies per entity type
+        # merge_strategy_overrides:
+        #   IPAddress:
+        #     hostname: "take_last"        # Keep most recent hostname
+        #     vlan_id: "max"               # Keep highest VLAN ID
+        #     status: "take_any_non_null"  # Prefer non-null values
+        #   Connected:
+        #     bandwidth_mbps: "max"        # Keep highest bandwidth
+
+    # Stage 4: Write deduplicated data to Parquet
+    - id: "write_iceberg"
+      type: "iceberg_writer"
+      input: "deduplicate"
+      config:
+        catalog_type: "hive"
+        catalog_config:
+          uri: "${HIVE_METASTORE_URI}"
+          s3.endpoint: "${MINIO_ENDPOINT}"
+          s3.access-key-id: "${MINIO_ACCESS_KEY}"
+          s3.secret-access-key: "${MINIO_SECRET_KEY}"
+          s3.path-style-access: "true"
+        nodes_namespace: "network"
+        nodes_table: "nodes"
+        relationships_namespace: "network"
+        relationships_table: "relationships"
+
+        # Smart partitioning for query performance
+        node_partitions: "primary_label"
+        relationship_partitions: "rel_type"
+
+        mode: "append"
+        create_table_if_missing: true
+# ---
+# Performance characteristics:
+#   - Throughput: 50K-100K entities/sec
+#   - Memory: 2-3x input size (efficient DataFrame operations)
+#   - Scaling: Near-linear from 10K to 10M entities
+#
+# Merge strategies (defined in schema, overridable here):
+#   - error_if_different: Fail if duplicates have different values
+#   - take_first: Keep first occurrence
+#   - take_last: Keep last occurrence
+#   - take_any_non_null: Prefer non-null values
+#   - min/max: Numeric minimum/maximum
+#   - sum: Numeric sum (for counters, metrics)
+#   - union: Combine unique values from lists
+#
+# Use cases:
+#   - Network log deduplication (100K+ events)
+#   - Multi-source data reconciliation
+#   - Time-series event consolidation
+#   - Large-scale entity resolution

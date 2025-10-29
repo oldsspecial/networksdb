@@ -1,0 +1,20 @@
+nodes:
+  - create: EmailAddress
+    name: fr
+    fields:
+      address: from
+      sources: ["const:test"]
+  
+  - create: EmailAddress
+    name: to
+    iterate: to
+    split_by: ","
+    fields:
+      address: to
+      sources: ["const:test"]
+
+  - create: Email
+    name: email
+    fields:
+      from_rel: fr
+      to: to

@@ -1,3 +1,4 @@
+version: "0.1"
 # Base schemas for common properties
 base_schemas:
   GraphObject:
@@ -146,4 +147,11 @@ relationships:
     rel_type: TO
     start_end_pairs:
     - start: Email
+      end: EmailAddress
+
+  Knows: 
+    extends: GraphObject
+    rel_type: Knows
+    start_end_pairs:
+    - start: EmailAddress
       end: EmailAddress

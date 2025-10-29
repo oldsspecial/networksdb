@@ -1,0 +1,59 @@
+pipeline:
+  name: network_discovery_test
+  description: Test pipeline with 2K records
+  version: 1.0.0
+  schema_modules: [networksdb]
+
+  stages:
+    - id: read_csv
+      type: csv_reader
+      config:
+        path: /tmp/large_test.csv
+        encoding: utf-8
+        batch_size: 10000
+
+    - id: parse_entities
+      type: dict_parser
+      input: read_csv
+      config:
+        error_handling:
+          strategy: continue_on_error
+          required_entities: []
+
+        mapping:
+          nodes:
+            - create: IPAddress
+              name: ip
+              fields:
+                address: ipv4_address
+                context: "const:test"
+
+            - create: Domain
+              name: domain
+              fields:
+                address: domain
+
+          relationships:
+            - create: HasIP
+              name: connection
+              start_node: domain
+              end_node: ip
+
+    # Write parsed entities to Trino staging tables
+    - id: stage_to_trino
+      type: trino_writer
+      input: parse_entities
+      config:
+        connection:
+          host: localhost
+          port: 8080
+          http_scheme: http
+          user: trino
+          catalog: iceberg
+          schema: default
+        # Staging table names
+        nodes_table: iceberg.testdb.nodes_test
+        relationships_table: iceberg.testdb.relationships_test
+        batch_size: 1000
+        # Create tables if they don't exist
+        create_tables: true

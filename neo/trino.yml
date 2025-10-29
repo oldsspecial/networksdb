@@ -1,0 +1,29 @@
+source:
+  type: jdbc
+  jdbc_url: jdbc:trino://host.docker.internal:8080/iceberg/testdb
+  credentials:
+    user: trino
+  
+  # Simple table names (dynamic label discovery)
+  nodes_table: iceberg.testdb.nodes
+  relationships_table: iceberg.testdb.relationships
+
+target:
+  neo4j:
+    uri: bolt://localhost:7687
+    user: neo4j
+    password: password
+    database: trino  # Target Neo4j database
+
+ingestion:
+  strategy: jdbc_load
+  schema_module: networksdb  # Your schema package
+
+  # Performance settings
+  batch_size: 5000
+  parallel_mode: "apoc"  # Use APOC parallel mode (recommended for JDBC)
+  parallel_workers: 4
+  transaction_batch_size: 1000
+
+  # Note: CONCURRENT TRANSACTIONS mode not supported for JDBC strategy
+  # (cannot partition data at SQL source level)

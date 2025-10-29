@@ -8,9 +8,9 @@ pipeline:
     - id: read_csv
       type: csv_reader
       config:
-        path: data/1m_public_30_dedup.csv
+        path: data/duplicate_data.csv
         encoding: utf-8
-        chunk_size: 10000
+        batch_size: 10000
 
     - id: parse_entities
       type: dict_parser
@@ -27,11 +27,14 @@ pipeline:
               fields:
                 address: ipv4_address
                 context: "const:test"
+                sources: ["const:test"]
+                extra: extra
             
             - create: Domain
               name: domain
               fields:
                 address: domain
+                sources: ["const:test"]
                 
           relationships:
             - create: HasIP

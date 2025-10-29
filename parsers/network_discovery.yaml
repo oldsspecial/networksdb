@@ -1,0 +1,21 @@
+# Reusable Network Discovery Mapping Template
+# This mapping defines the canonical structure for network discovery data
+# and can be imported by multiple pipelines regardless of data source.
+
+nodes:
+  - create: IPAddress
+    name: ip
+    fields:
+      address: ipv4_address
+      context: "const:test"
+
+  - create: Domain
+    name: domain
+    fields:
+      address: domain
+
+relationships:
+  - create: HasIP
+    name: connection
+    start_node: domain
+    end_node: ip
