@@ -5,8 +5,8 @@ source:
     user: trino
   
   # Simple table names (dynamic label discovery)
-  nodes_table: iceberg.testdb.nodes
-  relationships_table: iceberg.testdb.relationships
+  nodes_table: iceberg.network.nodes
+  relationships_table: iceberg.network.relationships
 
 target:
   neo4j:

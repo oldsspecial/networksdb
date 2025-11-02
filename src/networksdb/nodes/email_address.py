@@ -143,7 +143,6 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
 
     def to_dict(
         self,
-        separate_dynamic_properties: bool = False,
         serialize_containers: bool = False
     ) -> dict[str, Any]:
         """Convert node to structured dictionary representation.
@@ -151,11 +150,8 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
         Note: Embedded node properties are excluded from serialization.
 
         Args:
-            separate_dynamic_properties: If True, dynamic properties are returned in a
-                                       separate 'dynamic_properties' field. If False
-                                       (default), they are merged into the 'properties' field.
             serialize_containers: If True, serialize property containers (identifying_properties,
-                                properties, dynamic_properties) to JSON strings. If False (default),
+                                properties) to JSON strings. If False (default),
                                 return them as dicts.
 
         Returns:
@@ -164,10 +160,9 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
             - 'node_id': Computed unique identifier
 - 'schema_version': Schema version string (e.g., "1.0")
 - 'identifying_properties': Dict of identifying properties (or JSON string if serialize_containers=True)
-            - 'properties': Dict of regular properties (non-identifying, non-base) (or JSON string if serialize_containers=True)
+            - 'properties': Dict of all properties including dynamic properties (or JSON string if serialize_containers=True)
             - 'primary_label': Primary label string
             - 'labels': List of ALL labels (primary_label + additional_labels)
-            - 'dynamic_properties': Dict of dynamic properties (only if separate_dynamic_properties=True and node allows dynamic properties) (or JSON string if serialize_containers=True)
         """
         result = {}
 
@@ -199,9 +194,6 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
             else:
                 regular_props[field_name] = value
 
-        # Node does not allow dynamic properties, but canonical format requires empty dict
-        if separate_dynamic_properties:
-            result['dynamic_properties'] = {}
 
         # Add structured data
         result['node_id'] = self.node_id
@@ -216,8 +208,6 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
             import json
             result['identifying_properties'] = json.dumps(result['identifying_properties'])
             result['properties'] = json.dumps(result['properties'])
-            if 'dynamic_properties' in result:
-                result['dynamic_properties'] = json.dumps(result['dynamic_properties'])
 
         return result
 

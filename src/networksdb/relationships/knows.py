@@ -134,17 +134,13 @@ class Knows(BaseRelationship, IDGenerationMixin):
 
     def to_dict(
         self,
-        separate_dynamic_properties: bool = False,
         serialize_containers: bool = False
     ) -> dict[str, Any]:
         """Convert relationship to structured dictionary representation.
 
         Args:
-            separate_dynamic_properties: If True, dynamic properties are returned in a
-                                       separate 'dynamic_properties' field. If False
-                                       (default), they are merged into the 'properties' field.
             serialize_containers: If True, serialize property containers (identifying_properties,
-                                properties, dynamic_properties) to JSON strings. If False (default),
+                                properties) to JSON strings. If False (default),
                                 return them as dicts.
 
         Returns:
@@ -153,11 +149,10 @@ class Knows(BaseRelationship, IDGenerationMixin):
             - 'rel_id': Computed unique identifier (relationship ID)
 - 'schema_version': Schema version string (e.g., "1.0")
 - 'identifying_properties': Dict of identifying properties (or JSON string if serialize_containers=True)
-            - 'properties': Dict of regular properties (or JSON string if serialize_containers=True)
+            - 'properties': Dict of all properties including dynamic properties (or JSON string if serialize_containers=True)
             - 'rel_type': Relationship type string
             - 'start_node': Dict with minimal node info (primary_label, node_id)
             - 'end_node': Dict with minimal node info (primary_label, node_id)
-            - 'dynamic_properties': Dict of dynamic properties (only if separate_dynamic_properties=True and relationship allows dynamic properties) (or JSON string if serialize_containers=True)
         """
         result = {}
 
@@ -181,9 +176,6 @@ class Knows(BaseRelationship, IDGenerationMixin):
             else:
                 regular_props[field_name] = value
 
-        # Relationship does not allow dynamic properties, but canonical format requires empty dict
-        if separate_dynamic_properties:
-            result['dynamic_properties'] = {}
 
         result['rel_id'] = self.rel_id
         result['schema_version'] = self.__class__.schema_version
@@ -205,8 +197,6 @@ class Knows(BaseRelationship, IDGenerationMixin):
             import json
             result['identifying_properties'] = json.dumps(result['identifying_properties'])
             result['properties'] = json.dumps(result['properties'])
-            if 'dynamic_properties' in result:
-                result['dynamic_properties'] = json.dumps(result['dynamic_properties'])
 
         return result
     

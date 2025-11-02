@@ -14,7 +14,7 @@ sql_metadata = {
             "version": "1.0",
             "extraction_method": {
                 "name": "to_dict",
-                "parameters": {"separate_dynamic_properties": True}
+                "parameters": {}
             },
             "schema": {
                 "node_id": {
@@ -47,12 +47,7 @@ sql_metadata = {
                 "properties": {
                     "type": "dict",
                     "required": True,
-                    "description": "All non-identifying properties"
-                },
-                "dynamic_properties": {
-                    "type": "dict",
-                    "required": False,
-                    "condition": "present when separate_dynamic_properties=True and entity has dynamic properties"
+                    "description": "All non-identifying properties including dynamic properties"
                 }
             }
         },
@@ -60,7 +55,7 @@ sql_metadata = {
             "version": "1.0",
             "extraction_method": {
                 "name": "to_dict",
-                "parameters": {"separate_dynamic_properties": True}
+                "parameters": {}
             },
             "schema": {
                 "rel_id": {
@@ -116,12 +111,7 @@ sql_metadata = {
                 "properties": {
                     "type": "dict",
                     "required": True,
-                    "description": "All non-identifying properties"
-                },
-                "dynamic_properties": {
-                    "type": "dict",
-                    "required": False,
-                    "condition": "present when separate_dynamic_properties=True and entity has dynamic properties"
+                    "description": "All non-identifying properties including dynamic properties"
                 }
             }
         }
