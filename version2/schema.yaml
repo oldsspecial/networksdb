@@ -1,0 +1,110 @@
+schema_version: "2.0"
+schema_name: "servers_owners"
+description: "Schema for server and owner data"
+
+# Base types for inheritance
+base_schemas:
+  Timestamped:
+    properties:
+      created_at:
+        type: datetime
+        required: false
+        merge_strategy: min
+        description: "Creation timestamp"
+
+      updated_at:
+        type: datetime
+        required: false
+        merge_strategy: max
+        description: "Last update timestamp"
+
+      count:
+        type: integer
+        required: false
+        merge_strategy: sum
+
+# Node definitions
+nodes:
+  Server:
+    primary_label: Server
+    entity_version: "1.0.0"
+    extends: Timestamped
+    optional_labels: [Active, Inactive, Production, Development]
+    description: "Server infrastructure"
+
+    properties:
+      hostname:
+        type: string
+        identifying: true
+        required: true
+        normalize: [trim, lowercase]
+        constraints:
+          pattern: "^[a-z0-9-]+$"
+          min_length: 1
+          max_length: 63
+        description: "Server hostname"
+
+      ip_address:
+        type: string
+        required: false
+        normalize: [trim]
+        constraints:
+          pattern: "^\\d{1,3}(\\.\\d{1,3}){3}$"
+        merge_strategy: take_last
+        description: "IP address"
+
+      datacenter:
+        type: string
+        required: false
+        normalize: [trim]
+        merge_strategy: take_last
+        description: "Datacenter location"
+
+      status:
+        type: string
+        required: false
+        normalize: [trim, lowercase]
+        constraints:
+          enum: ["active", "inactive", "maintenance"]
+        merge_strategy: take_last
+        description: "Server status"
+
+  Person:
+    primary_label: Person
+    entity_version: "1.0.0"
+    extends: Timestamped
+    optional_labels: [Owner, Admin, User]
+    description: "Person entity"
+
+    properties:
+      name:
+        type: string
+        identifying: true
+        required: true
+        normalize: [trim]
+        description: "Person name"
+
+      email:
+        type: string
+        required: false
+        normalize: [trim, lowercase]
+        constraints:
+          pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        merge_strategy: take_first
+        description: "Email address"
+
+# Relationship definitions
+relationships:
+  OWNS:
+    rel_type: OWNS
+    description: "Person owns a server"
+
+    start_node: Person
+    end_node: Server
+
+    properties:
+      since:
+        type: datetime
+        required: false
+        merge_strategy: min
+        description: "Ownership start date"

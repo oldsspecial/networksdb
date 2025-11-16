@@ -1,0 +1,34 @@
+version: "1.0"
+
+# Data source configuration
+data_source:
+  type: csv
+  config:
+    path: data.csv
+
+# Entity mappings
+entities:
+  # Create Server entities
+  - alias: server
+    entity_type: Server  # Must match your ziptie-schema
+    fields:
+      hostname: hostname
+      ip_address: ip_addr
+      datacenter: datacenter
+      status: status
+      extra: extra
+      count: count
+
+  # Create Person entities
+  - alias: owner
+    entity_type: Person  # Must match your ziptie-schema
+    fields:
+      name: owner_name
+      email: owner_email
+      count: count
+
+# Relationships between entities
+relationships:
+  - source_alias: owner
+    target_alias: server
+    type: OWNS

@@ -10,10 +10,10 @@ from ziptie_schema.classification import ClassificationError
 
 
 # Transform imports
-from ..transforms.transforms import classify_ip, normalize_ip
+from networksdb.transforms.transforms import classify_ip, normalize_ip
 
 # Classifier function for runtime type determination
-from ..transforms.transforms import classify_ip
+from networksdb.transforms.transforms import classify_ip
 
 class IPAddress(BaseNode, IDGenerationMixin):
     """IPAddress node type.
@@ -86,8 +86,24 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
         """
         # Only classify when instantiating the base class directly
         if cls.__name__ == "IPAddress" and hasattr(cls, '_classifiable') and cls._classifiable:
-            # Get the subclass name from the classifier
-            subclass_name = classify_ip(kwargs)
+            # Pre-normalize data before classification
+            # Normalizers are idempotent, so running them here and again during
+            # Pydantic validation is safe. This ensures the classifier receives clean data.
+            normalized_data = {}
+            for key, value in kwargs.items():
+                normalized_data[key] = value
+
+            # Apply property normalizers
+            if "address" in normalized_data and normalized_data["address"] is not None:
+                try:
+                    normalized_data["address"] = normalize_ip(normalized_data["address"])
+                except Exception as e:
+                    raise ValueError(
+                        f"Failed to normalize 'address' for classification: {str(e)}"
+                    ) from e
+
+            # Get the subclass name from the classifier (with normalized data)
+            subclass_name = classify_ip(normalized_data)
 
             if subclass_name is None:
                 raise ClassificationError(
@@ -141,9 +157,27 @@ json_schema_extra={"identifying": True, "from_base_schema": False, "property_typ
         """
         # Only classify when called on the base class directly
         if cls.__name__ == "IPAddress" and hasattr(cls, '_classifiable') and cls._classifiable:
-            # Get the subclass name from the classifier
-            # Note: classifier function receives dict and handles its own normalization
-            subclass_name = classify_ip(obj if isinstance(obj, dict) else dict(obj))
+            # Convert obj to dict if needed
+            data = obj if isinstance(obj, dict) else dict(obj)
+
+            # Pre-normalize data before classification
+            # Normalizers are idempotent, so running them here and again during
+            # Pydantic validation is safe. This ensures the classifier receives clean data.
+            normalized_data = {}
+            for key, value in data.items():
+                normalized_data[key] = value
+
+            # Apply property normalizers
+            if "address" in normalized_data and normalized_data["address"] is not None:
+                try:
+                    normalized_data["address"] = normalize_ip(normalized_data["address"])
+                except Exception as e:
+                    raise ValueError(
+                        f"Failed to normalize 'address' for classification: {str(e)}"
+                    ) from e
+
+            # Get the subclass name from the classifier (with normalized data)
+            subclass_name = classify_ip(normalized_data)
 
             if subclass_name is None:
                 raise ClassificationError(

@@ -9,7 +9,7 @@ from ziptie_schema.base.mixins import IDGenerationMixin
 
 
 # Transform imports
-from ..transforms.transforms import normalize_ip
+from networksdb.transforms.transforms import normalize_ip
 
 from .ip_address import IPAddress
 

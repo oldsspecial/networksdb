@@ -10,10 +10,10 @@ from enum import Enum
 
 
 # Transform imports
-from ..transforms import validate_domain
+from networksdb.transforms import enrich_domain_labels, validate_domain
 
 # Label enricher for dynamic labels
-from ..transforms import enrich_domain_labels
+from networksdb.transforms import enrich_domain_labels
 
 class Domain(BaseNode, IDGenerationMixin):
     """Domain node type.

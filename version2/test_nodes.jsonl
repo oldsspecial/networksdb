@@ -1,0 +1,5 @@
+{"node_id": "XFQDds;~<HHWEH^N?9I$EPHYU", "primary_label": "Person", "labels": ["Person"], "properties": {"count": 1, "email": "bob@example.com"}, "identifying_properties": {"name": "Bob"}}
+{"node_id": "-(E%5S7-~m1Cpi)s0XW0g%Q)m", "primary_label": "Person", "labels": ["Person"], "properties": {"count": 2, "email": "alice@example.com"}, "identifying_properties": {"name": "Alice"}}
+{"node_id": "Sl?i%r_<}vcf>s2-`r_7qBBv{", "primary_label": "Server", "labels": ["Server"], "properties": {"count": 1, "ip_address": "10.0.0.3", "datacenter": "us-east", "status": "inactive", "extra": "none"}, "identifying_properties": {"hostname": "server3"}}
+{"node_id": "n$x&O*t0?y2=qfcuy$cb=SOQl", "primary_label": "Server", "labels": ["Server"], "properties": {"count": 1, "ip_address": "10.0.0.2", "datacenter": "us-west", "status": "active", "extra": "1"}, "identifying_properties": {"hostname": "server2"}}
+{"node_id": "A*3ovit>%Bs_2vHPeP|dvXs*f", "primary_label": "Server", "labels": ["Server"], "properties": {"count": 1, "ip_address": "10.0.0.1", "datacenter": "us-east", "status": "active", "extra": "yes"}, "identifying_properties": {"hostname": "server1"}}

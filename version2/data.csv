@@ -1,0 +1,4 @@
+hostname,ip_addr,datacenter,status,owner_name,owner_email,extra,count
+server1,10.0.0.1,us-east,active,Alice,alice@example.com,yes,1
+server2,10.0.0.2,us-west,active,Bob,bob@example.com,1,1
+server3,10.0.0.3,us-east,inactive,Alice,alice@example.com,none, 1

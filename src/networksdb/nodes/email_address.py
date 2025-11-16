@@ -10,7 +10,7 @@ from ziptie_schema.base.mixins import IDGenerationMixin
 
 # Transform imports
 from ziptie_schema import lowercase, trim
-from ..transforms import validate_email_address
+from networksdb.transforms import validate_email_address
 
 
 class EmailAddress(BaseNode, IDGenerationMixin):
