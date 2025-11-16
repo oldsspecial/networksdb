@@ -26,6 +26,14 @@ ingestion:
   schema_path: test_resolved.json  
   # CSV generation settings
   rows_per_csv: 50000  # Split CSVs every 50K rows (adjust based on dataset size)
+  parallel:
+    # Global settings (apply to both nodes and relationships)
+    mode: apoc
+    workers: 4
+    transaction_batch_size: 1000
+    error_handling: continue
+    max_retries: 3
 
-  # Note: batch_size, parallel settings not applicable to LoadCSVStrategy
-  # LoadCSVStrategy executes apoc.load.csv sequentially
+    # Override just for nodes (optional)
+    nodes:
+      workers: 4  # Same as global in your case
