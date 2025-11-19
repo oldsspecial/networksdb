@@ -1,0 +1,30 @@
+source:
+    type: jsonl
+    nodes_path: test_nodes.jsonl
+    #relationships_path: test_relationships.jsonl
+
+target:
+  neo4j:
+    uri: bolt://localhost:7687
+    user: neo4j
+    password: password
+    database: test
+
+ 
+
+ingestion:
+  strategy: direct_merge  # Changed from direct_merge
+  schema_path: network_resolved.json  
+  # CSV generation settings
+  batch_size: 100000  # Split CSVs every 50K rows (adjust based on dataset size)
+  parallel:
+    # Global settings (apply to both nodes and relationships)
+    mode: transactions 
+    workers: 1
+    transaction_batch_size: 10000
+    error_handling: retry
+    max_retries: 3
+
+    # Override just for nodes (optional)
+    nodes:
+      workers: 4  # Same as global in your case

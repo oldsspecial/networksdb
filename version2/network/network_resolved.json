@@ -1,0 +1,239 @@
+{
+  "schema_version": "2.0",
+  "canonical_storage_format": {
+    "node": {
+      "description": "Canonical storage format for node instances",
+      "required_fields": [
+        "primary_label",
+        "node_id",
+        "labels",
+        "properties",
+        "identifying_properties"
+      ],
+      "optional_fields": [],
+      "schema": {
+        "primary_label": {
+          "type": "string",
+          "description": "From schema definition"
+        },
+        "node_id": {
+          "type": "string",
+          "description": "Computed via SHA1+Base85"
+        },
+        "labels": {
+          "type": "list",
+          "description": "All labels including primary_label"
+        },
+        "properties": {
+          "type": "dict",
+          "description": "Regular (non-identifying) property values"
+        },
+        "identifying_properties": {
+          "type": "dict",
+          "description": "Identifying property values"
+        }
+      }
+    },
+    "relationship": {
+      "description": "Canonical storage format for relationship instances",
+      "required_fields": [
+        "rel_type",
+        "rel_id",
+        "properties",
+        "identifying_properties",
+        "start_node",
+        "end_node"
+      ],
+      "optional_fields": [],
+      "schema": {
+        "rel_type": {
+          "type": "string",
+          "description": "From schema definition"
+        },
+        "rel_id": {
+          "type": "string",
+          "description": "Computed via SHA1+Base85"
+        },
+        "properties": {
+          "type": "dict",
+          "description": "Regular (non-identifying) property values"
+        },
+        "identifying_properties": {
+          "type": "dict",
+          "description": "Identifying property values"
+        },
+        "start_node": {
+          "type": "dict",
+          "description": "Start node with primary_label and node_id",
+          "required_fields": [
+            "primary_label",
+            "node_id"
+          ]
+        },
+        "end_node": {
+          "type": "dict",
+          "description": "End node with primary_label and node_id",
+          "required_fields": [
+            "primary_label",
+            "node_id"
+          ]
+        }
+      }
+    }
+  },
+  "indexes": {
+    "constraints": [
+      {
+        "name": "ipaddress_node_id_key",
+        "type": "key",
+        "labels": [
+          "IPAddress"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "schema_type": "node"
+      },
+      {
+        "name": "domain_node_id_key",
+        "type": "key",
+        "labels": [
+          "Domain"
+        ],
+        "properties": [
+          "node_id"
+        ],
+        "schema_type": "node"
+      },
+      {
+        "name": "has_ip_rel_id_key",
+        "type": "key",
+        "labels": [
+          "HAS_IP"
+        ],
+        "properties": [
+          "rel_id"
+        ],
+        "schema_type": "relationship"
+      }
+    ],
+    "indexes": []
+  },
+  "nodes": {
+    "IPAddress": {
+      "primary_label": "IPAddress",
+      "labels": [
+        "IPAddress"
+      ],
+      "entity_version": "1.0.0",
+      "extends": "GraphObject",
+      "description": "An IPAddress",
+      "properties": {
+        "created_at": {
+          "type": "datetime",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "min",
+          "description": "Creation timestamp",
+          "default": "current_time"
+        },
+        "updated_at": {
+          "type": "datetime",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "max",
+          "description": "Last update timestamp",
+          "default": "current_time"
+        },
+        "count": {
+          "type": "integer",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "sum",
+          "default": 1
+        },
+        "address": {
+          "type": "string",
+          "identifying": true,
+          "required": true,
+          "normalize": [
+            "trim",
+            "lowercase"
+          ],
+          "constraints": {
+            "pattern": "^\\d{1,3}(\\.\\d{1,3}){3}$"
+          },
+          "description": "ip address"
+        }
+      },
+      "identifying_properties": [
+        "address"
+      ],
+      "regular_properties": [
+        "count",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "Domain": {
+      "primary_label": "Domain",
+      "labels": [
+        "Domain"
+      ],
+      "entity_version": "1.0.0",
+      "extends": "GraphObject",
+      "description": "Domain entity",
+      "properties": {
+        "created_at": {
+          "type": "datetime",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "min",
+          "description": "Creation timestamp",
+          "default": "current_time"
+        },
+        "updated_at": {
+          "type": "datetime",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "max",
+          "description": "Last update timestamp",
+          "default": "current_time"
+        },
+        "count": {
+          "type": "integer",
+          "identifying": false,
+          "required": false,
+          "merge_strategy": "sum",
+          "default": 1
+        },
+        "address": {
+          "type": "string",
+          "identifying": true,
+          "required": true,
+          "normalize": [
+            "trim"
+          ],
+          "description": "Domain name"
+        }
+      },
+      "identifying_properties": [
+        "address"
+      ],
+      "regular_properties": [
+        "count",
+        "created_at",
+        "updated_at"
+      ]
+    }
+  },
+  "relationships": {
+    "HAS_IP": {
+      "rel_type": "HAS_IP",
+      "description": "Domain has ip",
+      "properties": {},
+      "identifying_properties": [],
+      "regular_properties": []
+    }
+  }
+}

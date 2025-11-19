@@ -1,0 +1,29 @@
+version: "1.0"
+
+#I would like to specify schema here. could be gitlab.
+
+# Data source configuration
+data_source:
+  type: csv
+  config:
+    path: /Users/user/git/ziptie-group/networksdb/data/100k_public.csv
+
+# Entity mappings
+entities:
+  # Create Server entities
+  - alias: ip
+    entity_type: IPAddress  # Must match your ziptie-schema
+    fields:
+      address: ipv4_address
+      
+  # Create Person entities
+  - alias: domain
+    entity_type: Domain  # Must match your ziptie-schema
+    fields:
+      address: domain
+
+# Relationships between entities
+relationships:
+  - source_alias: domain
+    target_alias: ip
+    type: HAS_IP

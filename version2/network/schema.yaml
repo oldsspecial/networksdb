@@ -1,0 +1,69 @@
+schema_version: "2.0"
+schema_name: "servers_owners"
+description: "Schema for server and owner data"
+
+# Base types for inheritance
+base_schemas:
+  GraphObject:
+    properties:
+      created_at:
+        type: datetime
+        required: false
+        merge_strategy: min
+        description: "Creation timestamp"
+        default: current_time
+
+      updated_at:
+        type: datetime
+        required: false
+        merge_strategy: max
+        description: "Last update timestamp"
+        default: current_time
+
+      count:
+        type: integer
+        required: false
+        merge_strategy: sum
+        default: 1
+
+# Node definitions
+nodes:
+  IPAddress:
+    primary_label: IPAddress
+    entity_version: "1.0.0"
+    extends: GraphObject
+    description: "An IPAddress"
+
+    properties:
+      address:
+        type: string
+        identifying: true
+        required: true
+        normalize: [trim, lowercase]
+        description: "ip address"
+        constraints:
+          pattern: "^\\d{1,3}(\\.\\d{1,3}){3}$"
+
+  Domain:
+    primary_label: Domain
+    entity_version: "1.0.0"
+    extends: GraphObject
+    description: "Domain entity"
+
+    properties:
+      address:
+        type: string
+        identifying: true
+        required: true
+        normalize: [trim]
+        description: "Domain name"
+
+
+# Relationship definitions
+relationships:
+  HAS_IP:
+    rel_type: HAS_IP
+    description: "Domain has ip"
+
+    start_node: Domain
+    end_node: IPAddress
